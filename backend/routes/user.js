@@ -1,8 +1,8 @@
 const express = require('express');
-const { User, Account } = require('../schema/db');
+const { User, Account } = require('../db');
 const zod = require('zod');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const { JWT_SECRET } = require("../config");
 
 const router = express.Router();
 
@@ -55,7 +55,7 @@ router.post('/signup', async (req, res) => {
 
     // Validate input
     const { success, error } = signupSchema.safeParse(body);
-    if (!success) {
+    if (!success) { 
         return res.status(400).json({
             msg: "Invalid input",
             error: error.errors,
@@ -87,7 +87,7 @@ router.post('/signup', async (req, res) => {
     });
 
     // Generate JWT
-    const token = jwt.sign({ userid: user._id }, process.env.JWT);
+    const token = jwt.sign({ userid: user._id }, JWT_SECRET);
 
     res.status(201).json({
         msg: "User created",
@@ -105,7 +105,7 @@ router.post('/signin',async (req,res) => {
     if(data){
     const token = jwt.sign(
         { userid: data._id },
-        process.env.JWT);
+        JWT_SECRET)
         res.status(201).json({
         token: token
     })}
@@ -113,4 +113,23 @@ router.post('/signin',async (req,res) => {
         res.status(400).json({msg:"User not found in DB"})
     }});
 
+    router.delete('/delUser', async (req, res) => {
+        try {
+            const { id } = req.body;
+    
+            if (!id) {
+                return res.status(400).json({ error: 'User ID is required' });
+            }
+    
+            const {success} = await User.findByIdAndDelete(id);
+            if (!success) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            res.status(200).json({ message: 'User deleted successfully', user });
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+        
 module.exports = router

@@ -1,7 +1,7 @@
 const zod = require('zod'); 
 const jwt = require('jsonwebtoken');
 const express = require("express");
-const dblink = require("./config/dblink");
+const dblink = require("./dblink");
 require('dotenv').config();
 const mainRouter = require('./routes/index');
 const cors = require('cors');
