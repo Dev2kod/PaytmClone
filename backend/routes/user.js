@@ -3,6 +3,7 @@ const { User, Account } = require('../db');
 const zod = require('zod');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require("../config");
+const { authMiddleware } = require('../middleware');
 
 const router = express.Router();
 
@@ -80,6 +81,8 @@ router.post('/signup', async (req, res) => {
         lastname: body.lastname,
     });
 
+    const token = jwt.sign({ userid: user._id }, JWT_SECRET);
+
     // Create account with initial balance
     await Account.create({
         userid: user._id,
@@ -87,7 +90,6 @@ router.post('/signup', async (req, res) => {
     });
 
     // Generate JWT
-    const token = jwt.sign({ userid: user._id }, JWT_SECRET);
 
     res.status(201).json({
         msg: "User created",
@@ -112,6 +114,13 @@ router.post('/signin',async (req,res) => {
     if(!data){
         res.status(400).json({msg:"User not found in DB"})
     }});
+
+    router.get("/verify",authMiddleware,(req,res)=>{
+        console.log("verified");
+        res.json({
+            msg: "user Verified",
+        })
+    })
 
     router.delete('/delUser', async (req, res) => {
         try {
