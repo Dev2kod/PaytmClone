@@ -15,7 +15,7 @@ const authMiddleware = (req, res, next) => {
         if (!decoded.userid) {
             return res.status(403).json({ message: "Invalid token payload" });
         }
-        req.userId = decoded.userid;
+        req.userid = decoded.userid;
         next();
     } catch (err) {
         console.error("JWT Verification Error:", err.message);
