@@ -7,16 +7,15 @@ import Dashboard from './pages/Dashboard'
 import SendMoney from './pages/SendMoney'
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route path='signup' element={<Signup/>}/>
           <Route path='signin' element={<Signin/>}/>
-          <Route path='signup' element={<Dashboard/>}/>
-          <Route path='signup' element={<SendMoney/>}/>
+          <Route path='dashboard' element={<Dashboard/>}/>
+          <Route path='send' element={<SendMoney/>}/>
         </Routes>
       </BrowserRouter>
     </>

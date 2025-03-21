@@ -41,7 +41,7 @@ router.get("/bulk",async(req,res)=>{
         }]
     })
     res.json({
-        users: user.map(user=>({
+        users: users.map(user=>({
             username: user.username,
             firstname: user.firstname,
             lastname: user.lastname,
@@ -75,11 +75,11 @@ router.post('/signup', async (req, res) => {
     }
     // Create new user
     const user = await User.create({
-        username: body.username,
-        password: body.password,
         firstname: body.firstname,
         lastname: body.lastname,
-    });
+        username: body.username,
+        password: body.password,
+        });
 
     const token = jwt.sign({ userid: user._id }, JWT_SECRET);
 
@@ -141,4 +141,39 @@ router.post('/signin',async (req,res) => {
         }
     });
         
+    router.post("/account/transfer", authMiddleware, async (req, res) => {
+        try {
+            const { to, amount } = req.body;
+            const fromUserId = req.user.userid; // Extract sender from token
+    
+            if (!to || !amount || amount <= 0) {
+                return res.status(400).json({ message: "Invalid transfer request" });
+            }
+    
+            // Fetch sender and receiver accounts
+            const senderAccount = await Account.findOne({ userid: fromUserId });
+            const receiverAccount = await Account.findOne({ userid: to });
+    
+            if (!senderAccount || !receiverAccount) {
+                return res.status(404).json({ message: "User account not found" });
+            }
+    
+            if (senderAccount.balance < amount) {
+                return res.status(400).json({ message: "Insufficient balance" });
+            }
+    
+            // Update balances
+            senderAccount.balance -= amount;
+            receiverAccount.balance += amount;
+    
+            await senderAccount.save();
+            await receiverAccount.save();
+    
+            res.json({ message: "Transfer successful", balance: senderAccount.balance });
+        } catch (error) {
+            console.error("Transfer Error:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    });
+    
 module.exports = router
